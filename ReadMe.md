@@ -1,3 +1,7 @@
+### WARNING!
+This version of Xamarin.Forms.Nuke is modified for our own needs and may always be different from the original source!
+### WARNING!
+
 # Xamarin.Forms.Nuke
 
 <p align="left"><img src="__Docs__/nuke_big.png" height="180"/>

@@ -9,10 +9,8 @@ using Xamarin.Forms;
 using Xamarin.Forms.Nuke;
 using Xamarin.Forms.Platform.iOS;
 
-[assembly: ExportImageSourceHandler(
-    typeof(FileImageSource), typeof(ImageSourceHandler))]
-[assembly: ExportImageSourceHandler(
-    typeof(UriImageSource), typeof(ImageSourceHandler))]
+[assembly: ExportImageSourceHandler(typeof(FileImageSource), typeof(ImageSourceHandler))]
+[assembly: ExportImageSourceHandler(typeof(UriImageSource), typeof(ImageSourceHandler))]
 
 namespace Xamarin.Forms.Nuke
 {
@@ -23,11 +21,22 @@ namespace Xamarin.Forms.Nuke
 
         private static readonly ImageLoaderSourceHandler DefaultUriImageSourceHandler = new ImageLoaderSourceHandler();
 
-        public Task<UIImage> LoadImageAsync(
+        private static readonly StreamImagesourceHandler DefaultStreamImageSourceHandler = new StreamImagesourceHandler();
+
+        private static readonly FontImageSourceHandler DefaultFontImageSourcehandler = new FontImageSourceHandler();
+
+
+        public async Task<UIImage> LoadImageAsync(
             ImageSource imageSource,
             CancellationToken cancellationToken = new CancellationToken(),
-            float scale = 1) =>
-            NukeHelper.LoadViaNuke(imageSource, cancellationToken, scale);
+            float scale = 1)
+        {
+            var result = await NukeHelper.LoadViaNuke(imageSource, cancellationToken, scale);
+            if (result == null)
+               result = await LoadPlaceholderAsync();
+
+            return result;
+        }
 
         public Task<FormsCAKeyFrameAnimation> LoadImageAnimationAsync(
             ImageSource imageSource,
@@ -42,6 +51,24 @@ namespace Xamarin.Forms.Nuke
             }
 
             return DefaultFileImageSourceHandler.LoadImageAnimationAsync(imageSource, cancellationToken, scale);
+        }
+
+
+        private static Task<UIImage> LoadPlaceholderAsync()
+        {
+            switch (FormsHandler.PlaceholderImageSource)
+            {
+                case StreamImageSource streamImageSource:
+                    FormsHandler.Warn($"loading placeholder from resource");
+                    return DefaultStreamImageSourceHandler.LoadImageAsync(streamImageSource);
+                    ;
+                case FontImageSource fontImageSource:
+                    FormsHandler.Warn($"loading placeholder from Font");
+                    return DefaultFontImageSourcehandler.LoadImageAsync(fontImageSource);
+                default:
+                    FormsHandler.Warn($"no valid placeholder found");
+                    return null;
+            }
         }
     }
 }

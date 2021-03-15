@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 
 namespace Xamarin.Forms.Nuke
 {
@@ -19,6 +21,8 @@ namespace Xamarin.Forms.Nuke
         /// </summary>
         public static bool DisableFileImageSourceHandling { get; private set; } = false;
 
+        public static ImageSource PlaceholderImageSource { get; private set; }
+
         /// <summary>
         /// Initialize the Nuke library.
         /// </summary>
@@ -28,10 +32,19 @@ namespace Xamarin.Forms.Nuke
         {
             IsDebugEnabled = debug;
             DisableFileImageSourceHandling = disableFileImageSourceHandling;
+            
             NukeHelper.Preserve();
 
             Console.WriteLine(GetLogPrefix(DebugSeverity) + $"Initializing Xamarin.Forms.Nuke with {{ debug: {debug}, disableFileImageSourceHandling: {disableFileImageSourceHandling} }}");
         }
+
+
+        public static void PlaceholderFromResource(string resourceName, Assembly assembly) =>
+            PlaceholderImageSource = ImageSource.FromResource(resourceName, assembly);
+
+        public static void PlaceholderFromFontImageSource(FontImageSource fontImageSource) =>
+            PlaceholderImageSource = fontImageSource;
+
 
         internal static void Warn(string message)
         {
